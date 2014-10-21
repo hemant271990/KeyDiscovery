@@ -1,10 +1,30 @@
+import java.util.BitSet;
+
 
 public class ColumnCombination {
 
-	private String cName;
+	private String colName;
+	private BitSet bitSet;
 	
-	public ColumnCombination(String n)
+	public ColumnCombination(String n, BitSet bs)
 	{
-		cName = n;
+		setColName(n);
+		setBitSet(bs);
+	}
+
+	public BitSet getBitSet() {
+		return bitSet;
+	}
+
+	public void setBitSet(BitSet bitSet) {
+		this.bitSet = bitSet;
+	}
+
+	public String getColName() {
+		return colName;
+	}
+
+	public void setColName(String colName) {
+		this.colName = colName;
 	}
 }
