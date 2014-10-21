@@ -1,4 +1,3 @@
-package keyDiscovery;
 
 public class ColumnCombination {
 
