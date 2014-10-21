@@ -1,29 +1,34 @@
 
-import java.util.BitSet;
 
 public class KeyDiscovery {
 	
-	private Lattice lt;
+	public static Lattice lt;
 	
-	public void generatePowerLattice(String[] columns)
+	public static void generatePowerLattice(String[] columns)
 	{
 		int count = (int) Math.pow(2, columns.length);
 		//System.out.println(columns[3].toString());
 		String combination;
 		for (int i = 1; i < count; i ++)
 		{
-			combination = getColumnCombination(Integer.toBinaryString(i), columns);
+			String bitString = Integer.toBinaryString(i);
+			while (bitString.length() < columns.length) {
+		        bitString = "0" + bitString;
+			}
+			combination = getColumnCombination(bitString, columns);
 			//System.out.println(combination);
-			//int level = combination.length() - 1;
-			//lt.levelStructure[level].add(combination);
+			int level = combination.length() - 1;
+			//System.out.println(level);
+			//System.out.println(lt.levelStructure[0]);
+			lt.levelStructure[level].add(combination);
 		}
 		
 		
 	}
 
-	public String getColumnCombination(String binary, String[] columns)
+	public static String getColumnCombination(String binary, String[] columns)
 	{
-		System.out.println(binary);
+		//System.out.println(binary);
 		String combination = "";
 		for (int i = 0; i < binary.length(); i++)
 		{
@@ -34,10 +39,7 @@ public class KeyDiscovery {
 	}
 	
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 
-		KeyDiscovery kd = new KeyDiscovery();
-		
 		String[][] table = new String[][]{
 				  { "A", "B", "C", "D" },
 				  { "1", "2", "4", "1" },
@@ -46,14 +48,14 @@ public class KeyDiscovery {
 				  { "3", "2", "9", "2" }
 				};
 		
-		kd.lt = new Lattice(table[0].length);
-		kd.generatePowerLattice(table[0]);
+		lt = new Lattice(table[0].length);
+		generatePowerLattice(table[0]);
 		
-//		for(int i = 0; i < table[0].length; i++)
-//		{
-//			for(int j = 0; j < kd.lt.levelStructure[i].size(); j++)
-//				System.out.println(kd.lt.levelStructure[i].get(j));
-//		}
+		for(int i = 0; i < table[0].length; i++)
+		{
+			for(int j = 0; j < lt.levelStructure[i].size(); j++)
+				System.out.println(lt.levelStructure[i].get(j));
+		}
 	}
 
 }

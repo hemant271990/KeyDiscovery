@@ -9,7 +9,9 @@ public class Lattice {
 	@SuppressWarnings("unchecked")
 	public Lattice(int levels)
 	{
-		setLevelStructure((ArrayList<String>[])new ArrayList[levels]);
+		levelStructure = (ArrayList<String>[])new ArrayList[levels];
+		for(int i = 0; i < levels; i++)
+			levelStructure[i] = new ArrayList<String>();
 	}
 
 	public ArrayList<String>[] getLevelStructure() {
