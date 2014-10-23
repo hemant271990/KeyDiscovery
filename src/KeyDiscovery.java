@@ -1,6 +1,7 @@
 import java.io.Console;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Enumeration;
 import java.util.Hashtable;
 
 
@@ -15,12 +16,16 @@ public class KeyDiscovery {
 	
 	public static boolean allPrunedFlag = true;
 	
+	public static Hashtable<String, Integer> goldenStd = new Hashtable<String, Integer>();
+	
+	public static Hashtable<String, Integer> discoveredKeys = new Hashtable<String, Integer>();
+	
 	public static String[][] table = new String[][]{
 			  { "A", "B", "C", "D" },
 			  { "1", "2", "4", "1" },
-			  { "2", "2", "6", "3" },
-			  { "2", "2", "4", "1" },
-			  { "3", "2", "9", "2" }
+			  { "2", "2", "5", "3" },
+			  { "2", "2", "4", "3" },
+			  { "1", "2", "4", "3" }
 			};
 	
 	public static void generatePowerLattice(String[] columns)
@@ -40,7 +45,6 @@ public class KeyDiscovery {
 			int level = combination.length() - 1;
 			lt.levelStructure[level].add(cc);
 		}
-		
 		
 	}
 
@@ -91,7 +95,7 @@ public class KeyDiscovery {
 					float nbOfSupersets = lt.getNbOfSupersets(lt.levelStructure[i].get(j), i);
 					float probabOfYes = (float) getUniqueCount(lt.levelStructure[i].get(j)) / (float) (table.length - 1);
 					float probabOfNo = 1 - probabOfYes;
-					float EG = (nbOfSubsets + nbOfSupersets)*probabOfYes + (nbOfSubsets)*probabOfNo;
+					float EG = (nbOfSupersets)*probabOfYes + (nbOfSubsets)*probabOfNo;
 					if(EG > maxEG)
 					{
 						maxEG = EG;
@@ -105,50 +109,53 @@ public class KeyDiscovery {
 		}
 	}
 	
-	public static void pruneFor(ColumnCombination cc)
-	{
-		int level = cc.getColName().length() - 1;
-		cc.setPruned(true);
-		lt.pruneSuperset(cc, level);
-		lt.pruneSubsets(cc);
-		
-	}
-	
-	
-	
 	public static void main(String[] args) {
 
+//		goldenStd.put("AC", 1);
+//		goldenStd.put("AD", 1);
+//		goldenStd.put("ABC", 1);
+//		goldenStd.put("ACD", 1);
+//		goldenStd.put("ABD", 1);
+//		goldenStd.put("ABCD", 1);
+		
+//		goldenStd.put("C", 1);
+//		goldenStd.put("AC", 1);
+//		goldenStd.put("AD", 1);
+//		goldenStd.put("BC", 1);
+//		goldenStd.put("CD", 1);
+//		goldenStd.put("AD", 1);
+//		goldenStd.put("ABC", 1);
+//		goldenStd.put("BCD", 1);
+		goldenStd.put("ACD", 1);
+		//goldenStd.put("ABD", 1);
+		goldenStd.put("ABCD", 1);
+		
 		lt = new Lattice(table[0].length);
 		generatePowerLattice(table[0]);
-		//System.out.println("For: "+ cc2.getColName() + " " + nbSub + " " + nbSup + " " + c);
 		computeEGForLattice();
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		
-		/*System.out.println("Is " + maxEGCC.getColName() + " a unique column?");
-		Console console = System.console();
-		String ans = console.readLine();
-		if(ans.equalsIgnoreCase("yes"))
-		{
-			pruneFor(maxEGCC);
-		}*/
 		while(!allPrunedFlag)
 		{
-			pruneFor(maxEGCC);
-			computeEGForLattice();
-			try {
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			//Simulate user answers by verifying them against goldenStd
+			maxEGCC.setPruned(true);
+			if(goldenStd.containsKey(maxEGCC.getColName()))
+			{
+				int level = maxEGCC.getColName().length() - 1;
+				lt.pruneSuperset(maxEGCC, level);
+				discoveredKeys.put(maxEGCC.getColName(), 1);
+			} else
+			{
+				lt.pruneSubsets(maxEGCC);
 			}
+			
+			computeEGForLattice();
 		}
 		
-		System.out.println("Unique key is " + uniqueKeyAns.getColName());
+		Enumeration<String> discKeys = discoveredKeys.keys();
+		while(discKeys.hasMoreElements())
+			System.out.println("Discovered key is " + discKeys.nextElement());
+		
+		
 		/*for(int i = 0; i < table[0].length; i++)
 		{
 			for(int j = 0; j < lt.levelStructure[i].size(); j++)

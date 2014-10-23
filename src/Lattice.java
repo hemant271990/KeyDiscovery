@@ -56,7 +56,6 @@ public class Lattice {
 				if(nodeBs.equals(tempBs))
 				{
 					levelStructure[i].get(j).setPruned(true);
-					System.out.println("Pruned");
 				}
 			}
 		}
@@ -71,6 +70,7 @@ public class Lattice {
 		{
 			ColumnCombination curr = (ColumnCombination) queue.poll();
 			int level = curr.getBitSet().cardinality() - 2;
+			if (level < 0) continue;
 			ArrayList<ColumnCombination> levelNodes = levelStructure[level];
 			for (int j = 0; j < levelNodes.size(); j++) {
 				if(!levelNodes.get(j).isPruned())
