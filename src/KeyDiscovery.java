@@ -11,6 +11,8 @@ public class KeyDiscovery {
 	
 	public static ColumnCombination maxEGCC = null;
 	
+	public static ColumnCombination uniqueKeyAns = null;
+	
 	public static boolean allPrunedFlag = true;
 	
 	public static String[][] table = new String[][]{
@@ -24,7 +26,6 @@ public class KeyDiscovery {
 	public static void generatePowerLattice(String[] columns)
 	{
 		int count = (int) Math.pow(2, columns.length);
-		//System.out.println(columns[3].toString());
 		String combination;
 		for (int i = 1; i < count; i ++)
 		{
@@ -36,10 +37,7 @@ public class KeyDiscovery {
 			combination = getColumnCombination(bitString, columns);
 			
 			ColumnCombination cc = new ColumnCombination(combination, bs);
-			//System.out.println(combination);
 			int level = combination.length() - 1;
-			//System.out.println(level);
-			//System.out.println(lt.levelStructure[0]);
 			lt.levelStructure[level].add(cc);
 		}
 		
@@ -48,7 +46,6 @@ public class KeyDiscovery {
 
 	public static String getColumnCombination(String binary, String[] columns)
 	{
-		//System.out.println(binary);
 		String combination = "";
 		for (int i = 0; i < binary.length(); i++)
 		{
@@ -64,8 +61,6 @@ public class KeyDiscovery {
 		String columns = cc.getBitSet().toString();
 		String delims = "[{,} ]+";
 		String[] index = columns.split(delims);
-		//System.out.println(cc.getColName());
-		//System.out.println(index.length);
 		for (int i = 1; i < table.length; i++)
 		{
 			String mapKey = "";
@@ -74,21 +69,19 @@ public class KeyDiscovery {
 				int colId = table[0].length - Integer.parseInt(index[j]) - 1;
 				 mapKey += table[i][colId];
 			}
-			//System.out.println(mapKey);
 			map.put(mapKey, 1);
 		}
 		
-		//System.out.println(map.size());
 		return map.size();
-		//return 0;
 	}
 	
 	public static void computeEGForLattice() 
 	{
+		uniqueKeyAns = maxEGCC;
 		maxEGCC = null;
 		allPrunedFlag = true;
 		float maxEG = 0;
-		for(int i = 0; i < table[0].length; i++)
+		for(int i = 0; i < table[0].length-1; i++)
 		{
 			for(int j = 0; j < lt.levelStructure[i].size(); j++)
 			{
@@ -105,11 +98,8 @@ public class KeyDiscovery {
 						maxEGCC = lt.levelStructure[i].get(j);
 					}
 					lt.levelStructure[i].get(j).setExpectedGain(EG);
-					//System.out.print(lt.levelStructure[i].get(j).getColName());
-					//System.out.println(lt.levelStructure[i].get(j).getExpectedGain());
-					//System.out.println(probabOfYes);
 					allPrunedFlag = false;
-					System.out.println("For: "+ lt.levelStructure[i].get(j).getColName() + " " + nbOfSubsets + " " + nbOfSupersets + " " + getUniqueCount(lt.levelStructure[i].get(j)) + " " + lt.levelStructure[i].get(j).getExpectedGain() + " " + probabOfYes);
+					System.out.println("For: "+ lt.levelStructure[i].get(j).getColName() + " " + nbOfSubsets + " " + nbOfSupersets + " " + getUniqueCount(lt.levelStructure[i].get(j)) + " EG= " + lt.levelStructure[i].get(j).getExpectedGain() );
 				}
 			}
 		}
@@ -118,6 +108,7 @@ public class KeyDiscovery {
 	public static void pruneFor(ColumnCombination cc)
 	{
 		int level = cc.getColName().length() - 1;
+		cc.setPruned(true);
 		lt.pruneSuperset(cc, level);
 		lt.pruneSubsets(cc);
 		
@@ -149,21 +140,24 @@ public class KeyDiscovery {
 		{
 			pruneFor(maxEGCC);
 			computeEGForLattice();
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
-		System.out.println("Unique key is " + maxEGCC.getColName() + " a unique column?");
+		System.out.println("Unique key is " + uniqueKeyAns.getColName());
 		/*for(int i = 0; i < table[0].length; i++)
 		{
 			for(int j = 0; j < lt.levelStructure[i].size(); j++)
 			{
-				System.out.print(lt.levelStructure[i].get(j).getBitSet().toString());
+				System.out.print(lt.levelStructure[i].get(j).isPruned() + " ");
 				System.out.println(lt.levelStructure[i].get(j).getColName());
 			}
 		}*/
-		//lt.getNbOfSupersets(lt.levelStructure[0].get(2), 0);
-		//System.out.println(lt.getNbOfSubsets(3));
 		
-		//getUniqueCount(lt.levelStructure[0].get(2));
 	}
 
 }
