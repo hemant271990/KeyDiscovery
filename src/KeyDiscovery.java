@@ -1,3 +1,4 @@
+import java.io.Console;
 import java.util.BitSet;
 import java.util.Hashtable;
 
@@ -6,6 +7,16 @@ import java.util.Hashtable;
 public class KeyDiscovery {
 	
 	public static Lattice lt;
+	
+	public static ColumnCombination maxEGCC = null;
+	
+	public static String[][] table = new String[][]{
+			  { "A", "B", "C", "D" },
+			  { "1", "2", "4", "1" },
+			  { "2", "2", "6", "3" },
+			  { "2", "2", "4", "1" },
+			  { "3", "2", "9", "2" }
+			};
 	
 	public static void generatePowerLattice(String[] columns)
 	{
@@ -44,7 +55,7 @@ public class KeyDiscovery {
 		return combination;
 	}
 	
-	public static int getUniqueCount(String[][] data, ColumnCombination cc)
+	public static int getUniqueCount(ColumnCombination cc)
 	{
 		Hashtable<String, Integer> map = new Hashtable<String, Integer>();
 		String columns = cc.getBitSet().toString();
@@ -52,13 +63,13 @@ public class KeyDiscovery {
 		String[] index = columns.split(delims);
 		System.out.println(cc.getColName());
 		//System.out.println(index.length);
-		for (int i = 1; i < data.length; i++)
+		for (int i = 1; i < table.length; i++)
 		{
 			String mapKey = "";
 			for (int j = index.length - 1; j >= 1; j--)
 			{
-				int colId = data[0].length - Integer.parseInt(index[j]) - 1;
-				 mapKey += data[i][colId];
+				int colId = table[0].length - Integer.parseInt(index[j]) - 1;
+				 mapKey += table[i][colId];
 			}
 			//System.out.println(mapKey);
 			map.put(mapKey, 1);
@@ -69,18 +80,58 @@ public class KeyDiscovery {
 		//return 0;
 	}
 	
+	public static void computeEGForLattice() 
+	{
+		maxEGCC = null;
+		float maxEG = 0;
+		for(int i = 0; i < table[0].length; i++)
+		{
+			for(int j = 0; j < lt.levelStructure[i].size(); j++)
+			{
+				float nbOfSubsets = lt.getNbOfSubsets(i);
+				float nbOfSupersets = lt.getNbOfSupersets(lt.levelStructure[i].get(j), i);
+				float probabOfYes = getUniqueCount(lt.levelStructure[i].get(j)) / (table.length - 1);
+				float probabOfNo = 1 - probabOfYes;
+				float EG = (nbOfSubsets + nbOfSupersets)*probabOfYes + (nbOfSubsets)*probabOfNo;
+				if(EG > maxEG)
+				{
+					maxEG = EG;
+					maxEGCC = lt.levelStructure[i].get(j);
+				}
+				lt.levelStructure[i].get(j).setExpectedGain(EG);
+				System.out.print(lt.levelStructure[i].get(j).getBitSet().toString());
+				System.out.println(lt.levelStructure[i].get(j).getColName());
+			}
+		}
+		
+	}
+	
+	public static void pruneFor(ColumnCombination cc)
+	{
+		int level = cc.getColName().length() - 1;
+		lt.pruneSuperset(maxEGCC, level);
+		
+	}
+	
 	public static void main(String[] args) {
 
-		String[][] table = new String[][]{
-				  { "A", "B", "C", "D" },
-				  { "1", "2", "4", "1" },
-				  { "2", "2", "6", "3" },
-				  { "2", "2", "4", "1" },
-				  { "3", "2", "9", "2" }
-				};
-		
 		lt = new Lattice(table[0].length);
 		generatePowerLattice(table[0]);
+		computeEGForLattice();
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		System.out.println("Is " + maxEGCC.getColName() + " a unique column?");
+		Console console = System.console();
+		String ans = console.readLine();
+		if(ans.equalsIgnoreCase("yes"))
+		{
+			pruneFor(maxEGCC);
+		}
 		
 		for(int i = 0; i < table[0].length; i++)
 		{
@@ -93,7 +144,7 @@ public class KeyDiscovery {
 		//lt.getNbOfSupersets(lt.levelStructure[0].get(2), 0);
 		//System.out.println(lt.getNbOfSubsets(3));
 		
-		getUniqueCount(table, lt.levelStructure[0].get(2));
+		//getUniqueCount(lt.levelStructure[0].get(2));
 	}
 
 }
