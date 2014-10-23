@@ -25,7 +25,9 @@ public class Lattice {
 			ArrayList<ColumnCombination> levelNodes = levelStructure[i];
 			for (int j = 0; j < levelNodes.size(); j++) {
 				BitSet tempBs = cc.getBitSet();
-				BitSet nodeBs = levelNodes.get(j).getBitSet();
+				BitSet nodeBs = new BitSet();
+				nodeBs.or(levelNodes.get(j).getBitSet());
+				//System.out.println(tempBs.toString() + " "+ nodeBs.toString());
 				nodeBs.and(tempBs);
 				if(nodeBs.equals(tempBs))
 				{
@@ -51,7 +53,8 @@ public class Lattice {
 			ArrayList<ColumnCombination> levelNodes = levelStructure[i];
 			for (int j = 0; j < levelNodes.size(); j++) {
 				BitSet tempBs = cc.getBitSet();
-				BitSet nodeBs = levelNodes.get(j).getBitSet();
+				BitSet nodeBs = new BitSet();
+				nodeBs.or(levelNodes.get(j).getBitSet());
 				nodeBs.and(tempBs);
 				if(nodeBs.equals(tempBs))
 				{
@@ -59,7 +62,7 @@ public class Lattice {
 				}
 			}
 		}
-		//System.out.println(count);
+		System.out.println("Prune Superset called");
 	}
 	
 	public void pruneSubsets(ColumnCombination cc)

@@ -1,4 +1,5 @@
 import java.io.Console;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Hashtable;
 
@@ -9,6 +10,8 @@ public class KeyDiscovery {
 	public static Lattice lt;
 	
 	public static ColumnCombination maxEGCC = null;
+	
+	public static boolean allPrunedFlag = true;
 	
 	public static String[][] table = new String[][]{
 			  { "A", "B", "C", "D" },
@@ -61,7 +64,7 @@ public class KeyDiscovery {
 		String columns = cc.getBitSet().toString();
 		String delims = "[{,} ]+";
 		String[] index = columns.split(delims);
-		System.out.println(cc.getColName());
+		//System.out.println(cc.getColName());
 		//System.out.println(index.length);
 		for (int i = 1; i < table.length; i++)
 		{
@@ -75,7 +78,7 @@ public class KeyDiscovery {
 			map.put(mapKey, 1);
 		}
 		
-		System.out.println(map.size());
+		//System.out.println(map.size());
 		return map.size();
 		//return 0;
 	}
@@ -83,40 +86,50 @@ public class KeyDiscovery {
 	public static void computeEGForLattice() 
 	{
 		maxEGCC = null;
+		allPrunedFlag = true;
 		float maxEG = 0;
 		for(int i = 0; i < table[0].length; i++)
 		{
 			for(int j = 0; j < lt.levelStructure[i].size(); j++)
 			{
-				float nbOfSubsets = lt.getNbOfSubsets(i);
-				float nbOfSupersets = lt.getNbOfSupersets(lt.levelStructure[i].get(j), i);
-				float probabOfYes = getUniqueCount(lt.levelStructure[i].get(j)) / (table.length - 1);
-				float probabOfNo = 1 - probabOfYes;
-				float EG = (nbOfSubsets + nbOfSupersets)*probabOfYes + (nbOfSubsets)*probabOfNo;
-				if(EG > maxEG)
+				if(!lt.levelStructure[i].get(j).isPruned())
 				{
-					maxEG = EG;
-					maxEGCC = lt.levelStructure[i].get(j);
+					float nbOfSubsets = lt.getNbOfSubsets(i);
+					float nbOfSupersets = lt.getNbOfSupersets(lt.levelStructure[i].get(j), i);
+					float probabOfYes = (float) getUniqueCount(lt.levelStructure[i].get(j)) / (float) (table.length - 1);
+					float probabOfNo = 1 - probabOfYes;
+					float EG = (nbOfSubsets + nbOfSupersets)*probabOfYes + (nbOfSubsets)*probabOfNo;
+					if(EG > maxEG)
+					{
+						maxEG = EG;
+						maxEGCC = lt.levelStructure[i].get(j);
+					}
+					lt.levelStructure[i].get(j).setExpectedGain(EG);
+					//System.out.print(lt.levelStructure[i].get(j).getColName());
+					//System.out.println(lt.levelStructure[i].get(j).getExpectedGain());
+					//System.out.println(probabOfYes);
+					allPrunedFlag = false;
+					System.out.println("For: "+ lt.levelStructure[i].get(j).getColName() + " " + nbOfSubsets + " " + nbOfSupersets + " " + getUniqueCount(lt.levelStructure[i].get(j)) + " " + lt.levelStructure[i].get(j).getExpectedGain() + " " + probabOfYes);
 				}
-				lt.levelStructure[i].get(j).setExpectedGain(EG);
-				System.out.print(lt.levelStructure[i].get(j).getBitSet().toString());
-				System.out.println(lt.levelStructure[i].get(j).getColName());
 			}
 		}
-		
 	}
 	
 	public static void pruneFor(ColumnCombination cc)
 	{
 		int level = cc.getColName().length() - 1;
-		lt.pruneSuperset(maxEGCC, level);
+		lt.pruneSuperset(cc, level);
+		lt.pruneSubsets(cc);
 		
 	}
+	
+	
 	
 	public static void main(String[] args) {
 
 		lt = new Lattice(table[0].length);
 		generatePowerLattice(table[0]);
+		//System.out.println("For: "+ cc2.getColName() + " " + nbSub + " " + nbSup + " " + c);
 		computeEGForLattice();
 		try {
 			Thread.sleep(1000);
@@ -125,22 +138,28 @@ public class KeyDiscovery {
 			e.printStackTrace();
 		}
 		
-		System.out.println("Is " + maxEGCC.getColName() + " a unique column?");
+		/*System.out.println("Is " + maxEGCC.getColName() + " a unique column?");
 		Console console = System.console();
 		String ans = console.readLine();
 		if(ans.equalsIgnoreCase("yes"))
 		{
 			pruneFor(maxEGCC);
+		}*/
+		while(!allPrunedFlag)
+		{
+			pruneFor(maxEGCC);
+			computeEGForLattice();
 		}
 		
-		for(int i = 0; i < table[0].length; i++)
+		System.out.println("Unique key is " + maxEGCC.getColName() + " a unique column?");
+		/*for(int i = 0; i < table[0].length; i++)
 		{
 			for(int j = 0; j < lt.levelStructure[i].size(); j++)
 			{
 				System.out.print(lt.levelStructure[i].get(j).getBitSet().toString());
 				System.out.println(lt.levelStructure[i].get(j).getColName());
 			}
-		}
+		}*/
 		//lt.getNbOfSupersets(lt.levelStructure[0].get(2), 0);
 		//System.out.println(lt.getNbOfSubsets(3));
 		
