@@ -24,8 +24,8 @@ public class KeyDiscovery {
 			  { "A", "B", "C", "D" },
 			  { "1", "2", "4", "1" },
 			  { "2", "2", "5", "3" },
-			  { "2", "2", "4", "3" },
-			  { "1", "2", "4", "3" }
+			  { "2", "2", "4", "3" }
+			  //{ "1", "2", "4", "3" }
 			};
 	
 	public static void generatePowerLattice(String[] columns)
