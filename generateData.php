@@ -4,13 +4,14 @@ $link = mysql_pconnect("localhost", "keyDiscovery", "keyDiscovery") or die ("ERR
 mysql_select_db("keyDiscovery", $link) or die("ERROR: Couldn't select RUBiS database");
 
 $min = 1;
-$max = 4;
-for($i = 0; $i < 10; $i++) {
+$max = 6;
+for($i = 0; $i < 40; $i++) {
 $val1 = rand($min,$max);
 $val2 = rand($min,$max);
 $val3 = rand($min,$max);
 $val4 = rand($min,$max);
-	mysql_query("INSERT INTO data VALUES ($val1, $val2, $val3, $val4)", $link);
+$val5 = rand($min,$max);
+	mysql_query("INSERT INTO data VALUES ($val1, $val2, $val3, $val4, $val5)", $link);
 }
 
 
