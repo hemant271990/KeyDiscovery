@@ -24,53 +24,13 @@ public class KeyDiscovery {
 			  { "A", "B", "C", "D" },
 			  { "1", "2", "4", "1" },
 			  { "2", "2", "5", "3" },
-			  { "2", "2", "4", "3" }
+			  { "3", "2", "4", "3" }
 			  //{ "1", "2", "4", "3" }
 			};*/
 	
-	public static String[] keys = new String[] { "AD" };
+	public static String[] keys = new String[] { "ABCDEFGH" };
 	
-	public static String[][] table = new String[][]{
-		{ "A", "B", "C", "D", "E" },
-		{"1","6","1","5","1"}, 
-		{"1","3","1","6","4"}, 
-		{"1","3","2","1","3"}, 
-		{"1","6","3","5","4"}, 
-		{"1","3","4","5","2"}, 
-		{"1","4","6","2","4"}, 
-		{"2","5","6","6","1"}, 
-		{"3","6","1","1","4"}, 
-		{"3","6","1","4","5"}, 
-		{"3","4","2","1","2"}, 
-		{"3","3","3","5","4"}, 
-		{"3","5","4","5","4"}, 
-		{"3","3","4","3","6"}, 
-		{"3","2","6","5","2"}, 
-		{"3","4","6","2","5"}, 
-		{"4","2","1","5","2"}, 
-		{"4","4","2","5","3"}, 
-		{"4","4","5","2","3"}, 
-		{"4","4","6","6","3"}, 
-		{"4","5","6","1","5"}, 
-		{"4","5","6","1","6"}, 
-		{"5","2","1","5","1"}, 
-		{"5","3","1","3","2"}, 
-		{"5","4","1","1","3"}, 
-		{"5","2","1","4","4"}, 
-		{"5","5","2","6","5"}, 
-		{"5","1","3","6","2"}, 
-		{"5","4","4","6","4"}, 
-		{"5","1","4","1","5"}, 
-		{"5","3","5","2","4"}, 
-		{"5","2","5","5","6"}, 
-		{"5","2","6","3","3"}, 
-		{"5","6","6","2","5"}, 
-		{"6","2","1","5","3"}, 
-		{"6","6","1","1","5"}, 
-		{"6","1","2","6","3"}, 
-		{"6","1","3","5","3"}, 
-		{"6","3","5","1","6"} 
-	};
+	public static String[][] table;
 	
 	public static void generatePowerLattice(String[] columns)
 	{
@@ -147,7 +107,7 @@ public class KeyDiscovery {
 					}
 					lt.levelStructure[i].get(j).setExpectedGain(EG);
 					allPrunedFlag = false;
-					System.out.println("For: "+ lt.levelStructure[i].get(j).getColName() + " " + nbOfSubsets + " " + nbOfSupersets + " uniques: " + getUniqueCount(lt.levelStructure[i].get(j)) + " EG= " + lt.levelStructure[i].get(j).getExpectedGain() );
+					//System.out.println("For: "+ lt.levelStructure[i].get(j).getColName() + " " + nbOfSubsets + " " + nbOfSupersets + " uniques: " + getUniqueCount(lt.levelStructure[i].get(j)) + " EG= " + lt.levelStructure[i].get(j).getExpectedGain() );
 				}
 			}
 		}
@@ -177,50 +137,57 @@ public class KeyDiscovery {
 //		goldenStd.put("ACDE", 1);
 //		goldenStd.put("ABCE", 1);
 //		goldenStd.put("ABCDE", 1);
-
-		DataGenerator dg = new DataGenerator(keys);
+		int numQAvg = 0;
 		
-/*		for(int i = 0; i < keys.length; i++)
+		for(int runs = 0; runs < 1; runs++)
 		{
-			goldenStd.put(keys[i], 1);
-		}
-		
-		int numQ = 0;
-		lt = new Lattice(table[0].length);
-		generatePowerLattice(table[0]);
-		computeEGForLattice();
-		
-		while(!allPrunedFlag)
-		{
-			//Simulate user answers by verifying them against goldenStd
-			maxEGCC.setPruned(true);
-			if(goldenStd.containsKey(maxEGCC.getColName()))
+			DataGenerator dg = new DataGenerator(keys);
+			table = dg.table;
+			for(int i = 0; i < keys.length; i++)
 			{
-				int level = maxEGCC.getColName().length() - 1;
-				lt.pruneSuperset(maxEGCC, level);
-				discoveredKeys.put(maxEGCC.getColName(), 1);
-			} else
-			{
-				lt.pruneSubsets(maxEGCC);
+				goldenStd.put(keys[i], 1);
 			}
-			numQ++;
+			
+			int numQ = 0;
+			lt = new Lattice(table[0].length);
+			generatePowerLattice(table[0]);
 			computeEGForLattice();
+			
+			while(!allPrunedFlag)
+			{
+				//Simulate user answers by verifying them against goldenStd
+				maxEGCC.setPruned(true);
+				if(goldenStd.containsKey(maxEGCC.getColName()))
+				{
+					int level = maxEGCC.getColName().length() - 1;
+					lt.pruneSuperset(maxEGCC, level);
+					discoveredKeys.put(maxEGCC.getColName(), 1);
+				} else
+				{
+					lt.pruneSubsets(maxEGCC);
+				}
+				numQ++;
+				computeEGForLattice();
+			}
+			
+			Enumeration<String> discKeys = discoveredKeys.keys();
+			while(discKeys.hasMoreElements())
+				System.out.println("#####Discovered key is " + discKeys.nextElement());
+			
+			System.out.println("NUMBER OF QUESTIONS ASKED " + numQ);
+			
+			numQAvg += numQ;
+			/*for(int i = 0; i < table[0].length; i++)
+			{
+				for(int j = 0; j < lt.levelStructure[i].size(); j++)
+				{
+					System.out.print(lt.levelStructure[i].get(j).isPruned() + " ");
+					System.out.println(lt.levelStructure[i].get(j).getColName());
+				}
+			}*/
 		}
 		
-		Enumeration<String> discKeys = discoveredKeys.keys();
-		while(discKeys.hasMoreElements())
-			System.out.println("#####Discovered key is " + discKeys.nextElement());
-		
-		System.out.println("NUMBER OF QUESTIONS ASKED " + numQ);
-*/		
-		/*for(int i = 0; i < table[0].length; i++)
-		{
-			for(int j = 0; j < lt.levelStructure[i].size(); j++)
-			{
-				System.out.print(lt.levelStructure[i].get(j).isPruned() + " ");
-				System.out.println(lt.levelStructure[i].get(j).getColName());
-			}
-		}*/
+		System.out.println("--------AVERAGE NUMBER OF QUESTIONS ASKED " + numQAvg/10);
 		
 	}
 

@@ -44,7 +44,7 @@ public class Lattice {
 	
 	public void pruneSuperset(ColumnCombination cc, int level)
 	{
-		System.out.println("----Prune Superset called for " + cc.getColName());
+		//System.out.println("----Prune Superset called for " + cc.getColName());
 		for(int i = level+1; i < levelStructure.length; i++)
 		{
 			ArrayList<ColumnCombination> levelNodes = levelStructure[i];
@@ -65,7 +65,7 @@ public class Lattice {
 	{
 		Queue<ColumnCombination> queue = new LinkedList<ColumnCombination>();
 		queue.add(cc);
-		System.out.println("----Prune Subset called for " + cc.getColName());
+		//System.out.println("----Prune Subset called for " + cc.getColName());
 		while(!queue.isEmpty())
 		{
 			ColumnCombination curr = (ColumnCombination) queue.poll();
@@ -90,7 +90,7 @@ public class Lattice {
 						if((levelStructure[level].get(j).getBitSet().cardinality() - 1) != 0)
 						{
 							queue.add(levelStructure[level].get(j));
-							System.out.println(levelStructure[level].get(j).getColName());
+							//System.out.println(levelStructure[level].get(j).getColName());
 						}
 					}
 				}
