@@ -3,15 +3,16 @@ import java.util.Hashtable;
 
 public class DataGenerator {
 	
-	public static final String[] attribute = new String[] {"A", "B", "C", "D", "E", "F", "G", "H"};
+	//public static final String[] attribute = new String[] {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
+	public static final String[] attribute = new String[] {"A", "B", "C"};
 	
 	public static final int MAX_COL = attribute.length;
 	
-	public static final int MAX_ROW = 1000;
+	public static final int MAX_ROW = 4;
 	
 	public static final int MAX_KEYS = 1;
 	
-	public static final int RAND_MAX = 3;
+	public static int RAND_MAX = 12;
 	
 	public String[][] table = new String[MAX_ROW+1][MAX_COL];
 	
@@ -21,7 +22,7 @@ public class DataGenerator {
 	
 	public int tableIndex = 0;
 	
-	public DataGenerator(String[] uniqueKeys)
+	public DataGenerator(String[] uniqueKeys, int rand_max)
 	{
 		int keysCount = 0;
 		String keyMap = "";
@@ -43,8 +44,9 @@ public class DataGenerator {
 		
 		//System.out.println(keys[1]);
 		table[tableIndex++] = attribute;
+		RAND_MAX = rand_max;
 		generateTable();
-		//printTable();
+		printTable();
 	}
 	
 	public void generateTable()
@@ -59,18 +61,33 @@ public class DataGenerator {
 			}
 			
 			String toCheck = "";
+			boolean canPutRow = true;
+			String[] keysToPut = new String[MAX_KEYS];
 			for(int j = 0; j < keys.length; j++)
 			{
+				toCheck += j+"_";
 				for(int k = 0; k < keys[j].length(); k++)
 				{
 					int idx = Integer.parseInt(keys[j].charAt(k) + "");
 					toCheck += row[idx];
 				}
 				
-				if(!uniques.containsKey(toCheck))
+				if(uniques.containsKey(toCheck))
 				{
-					table[tableIndex++] = row;
-					uniques.put(toCheck, 1);
+					canPutRow = false;
+				}else {
+					keysToPut[j] = toCheck;
+					toCheck = "";
+				}
+			}
+			
+			if(canPutRow)
+			{
+				table[tableIndex++] = row;
+				for(int l = 0; l < keysToPut.length; l++)
+				{
+					if(keysToPut[l] != null)
+						uniques.put(keysToPut[l], 1);
 				}
 			}
 		}

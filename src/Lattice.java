@@ -42,6 +42,82 @@ public class Lattice {
 		return (int) (Math.pow(2, level+1) - 1);
 	}
 	
+	public ArrayList<String> getSuperset(String elem)
+	{
+		int level = elem.length()-1;
+		ColumnCombination cc = null;
+		ArrayList<String> superset = new ArrayList<String>();
+		ArrayList<ColumnCombination> sameLevelNodes = levelStructure[level];
+		for (int k = 0; k < sameLevelNodes.size(); k++) {
+			if(sameLevelNodes.get(k).getColName() == elem)
+				cc = sameLevelNodes.get(k);
+		}
+		
+		//System.out.println("----Prune Superset called for " + cc.getColName());
+		for(int i = level+1; i < levelStructure.length; i++)
+		{
+			ArrayList<ColumnCombination> levelNodes = levelStructure[i];
+			for (int j = 0; j < levelNodes.size(); j++) {
+				BitSet tempBs = cc.getBitSet();
+				BitSet nodeBs = new BitSet();
+				nodeBs.or(levelNodes.get(j).getBitSet());
+				nodeBs.and(tempBs);
+				if(nodeBs.equals(tempBs))
+				{
+					superset.add(levelStructure[i].get(j).getColName());
+				}
+			}
+		}
+		
+		return superset;
+	}
+	
+	public ArrayList<String> getSubset(String elem)
+	{
+		int level = elem.length()-1;
+		ColumnCombination cc = null;
+		ArrayList<String> subset = new ArrayList<String>();
+		ArrayList<ColumnCombination> sameLevelNodes = levelStructure[level];
+		for (int k = 0; k < sameLevelNodes.size(); k++) {
+			if(sameLevelNodes.get(k).getColName() == elem)
+				cc = sameLevelNodes.get(k);
+		}
+		
+		Queue<ColumnCombination> queue = new LinkedList<ColumnCombination>();
+		queue.add(cc);
+		//System.out.println("----Prune Subset called for " + cc.getColName());
+		while(!queue.isEmpty())
+		{
+			ColumnCombination curr = (ColumnCombination) queue.poll();
+			level = curr.getBitSet().cardinality() - 2;
+			if (level < 0) continue;
+			ArrayList<ColumnCombination> levelNodes = levelStructure[level];
+			for (int j = 0; j < levelNodes.size(); j++) 
+			{
+				int size = cc.getBitSet().size();
+				BitSet tempBs = new BitSet();
+				tempBs.or(cc.getBitSet());
+				tempBs.flip(0, size);
+				
+				BitSet nodeBs = new BitSet();
+				nodeBs.or(levelNodes.get(j).getBitSet());
+				nodeBs.and(tempBs);
+				if(nodeBs.cardinality() == 0)
+				{
+					subset.add(levelStructure[level].get(j).getColName());
+					
+					if((levelStructure[level].get(j).getBitSet().cardinality() - 1) != 0)
+					{
+						queue.add(levelStructure[level].get(j));
+						//System.out.println(levelStructure[level].get(j).getColName());
+					}
+				}
+			}
+		}
+		
+		return subset;
+	}
+	
 	public void pruneSuperset(ColumnCombination cc, int level)
 	{
 		//System.out.println("----Prune Superset called for " + cc.getColName());
